@@ -7,6 +7,8 @@ import {
   TaskArguments,
   TaskDefinition,
 } from "../../../types";
+import path from "path";
+import { importCsjOrEsModule } from "../../util/import-module";
 import { HardhatError } from "../errors";
 import { ErrorDescriptor, ERRORS } from "../errors-list";
 import * as types from "../params/argumentTypes";
@@ -76,6 +78,27 @@ export class SimpleTaskDefinition implements TaskDefinition {
   public setAction<ArgsT extends TaskArguments>(action: ActionType<ArgsT>) {
     // TODO: There's probably something bad here. See types.ts for more info.
     this.action = action;
+    return this;
+  }
+
+  /**
+   * Sets the task's action.
+   * @param pathToFile The path to the task file.
+   */
+  public setLazyAction(pathToFile: string) {
+    this.setAction((taskArgs, hre, runSuper) => {
+      const actualPath = path.isAbsolute(pathToFile)
+        ? pathToFile
+        : path.join(hre.config.paths.root, pathToFile);
+
+      const action = importCsjOrEsModule(actualPath);
+
+      if (typeof action !== "function") {
+        throw "Not a function";
+      }
+
+      return action(taskArgs, hre, runSuper);
+    });
     return this;
   }
 
@@ -572,6 +595,23 @@ export class OverriddenTaskDefinition implements TaskDefinition {
   public setAction<ArgsT extends TaskArguments>(action: ActionType<ArgsT>) {
     // TODO: There's probably something bad here. See types.ts for more info.
     this._action = action;
+    return this;
+  }
+
+  /**
+   * Overrides the parent task's action.
+   * @param pathToFile The path to the task file.
+   */
+  public setLazyAction(pathToFile: string) {
+    this.setAction((...args) => {
+      const action = importCsjOrEsModule(pathToFile);
+
+      if (typeof action !== "function") {
+        throw "Not a function";
+      }
+
+      return action(...args);
+    });
     return this;
   }
 

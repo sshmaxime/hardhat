@@ -44,6 +44,8 @@ export interface ConfigurableTaskDefinition {
 
   setAction(action: ActionType<TaskArguments>): this;
 
+  setLazyAction(pathToFile: string): this;
+
   addParam<T>(
     name: string,
     description?: string,

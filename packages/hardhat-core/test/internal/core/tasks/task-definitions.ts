@@ -100,6 +100,47 @@ describe("SimpleTaskDefinition", () => {
     });
   });
 
+  describe("setLazyAction", () => {
+    it("Should change the action", async () => {
+      const taskDefinition = new SimpleTaskDefinition("name");
+
+      taskDefinition.setLazyAction("./test.lazyAction.ts");
+      let result = await taskDefinition.action(
+        {},
+        {
+          config: {
+            paths: {
+              root: __dirname,
+            },
+          },
+        } as any,
+        runSuperNop
+      );
+      assert.equal(result, 42);
+    });
+
+    it("Should throw for non function lazy action", async () => {
+      const taskDefinition = new SimpleTaskDefinition("name");
+
+      taskDefinition.setLazyAction("./test.badLazyAction.ts");
+      assert.throws(
+        () =>
+          taskDefinition.action(
+            {},
+            {
+              config: {
+                paths: {
+                  root: __dirname,
+                },
+              },
+            } as any,
+            runSuperNop
+          ),
+        "Not a function"
+      );
+    });
+  });
+
   describe("param definition rules", () => {
     let taskDefinition: SimpleTaskDefinition;
 

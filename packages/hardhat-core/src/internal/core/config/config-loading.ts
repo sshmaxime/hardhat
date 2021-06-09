@@ -8,6 +8,7 @@ import type StackTraceParserT from "stacktrace-parser";
 import { HardhatArguments, HardhatConfig } from "../../../types";
 import { HardhatContext } from "../../context";
 import { SUPPORTED_SOLIDITY_VERSION_RANGE } from "../../hardhat-network/stack-traces/solidityTracer";
+import { importCsjOrEsModule } from "../../util/import-module";
 import { findClosestPackageJson } from "../../util/packageInfo";
 import { HardhatError } from "../errors";
 import { ERRORS } from "../errors-list";
@@ -18,11 +19,6 @@ import { validateConfig } from "./config-validation";
 import { DEFAULT_SOLC_VERSION } from "./default-config";
 
 const log = debug("hardhat:core:config");
-
-function importCsjOrEsModule(filePath: string): any {
-  const imported = require(filePath);
-  return imported.default !== undefined ? imported.default : imported;
-}
 
 export function resolveConfigPath(configPath: string | undefined) {
   if (configPath === undefined) {
